@@ -1,59 +1,89 @@
 package com.fesvieira.pomotasks.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val LightColors = lightColorScheme(
+    primary = mtl_primary,
+    onPrimary = mtl_onPrimary,
+    primaryContainer = mtl_primaryContainer,
+    onPrimaryContainer = mtl_onPrimaryContainer,
+    secondary = mtl_secondary,
+    onSecondary = mtl_onSecondary,
+    secondaryContainer = mtl_secondaryContainer,
+    onSecondaryContainer = mtl_onSecondaryContainer,
+    tertiary = mtl_tertiary,
+    onTertiary = mtl_onTertiary,
+    tertiaryContainer = mtl_tertiaryContainer,
+    onTertiaryContainer = mtl_onTertiaryContainer,
+    error = mtl_error,
+    errorContainer = mtl_errorContainer,
+    onError = mtl_onError,
+    onErrorContainer = mtl_onErrorContainer,
+    background = mtl_background,
+    onBackground = mtl_onBackground,
+    surface = mtl_surface,
+    onSurface = mtl_onSurface,
+    surfaceVariant = mtl_surfaceVariant,
+    onSurfaceVariant = mtl_onSurfaceVariant,
+    outline = mtl_outline,
+    inverseOnSurface = mtl_inverseOnSurface,
+    inverseSurface = mtl_inverseSurface,
+    inversePrimary = mtl_inversePrimary,
+    surfaceTint = mtl_surfaceTint,
+    outlineVariant = mtl_outlineVariant,
+    scrim = mtl_scrim,
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+private val DarkColors = darkColorScheme(
+    primary = mtd_primary,
+    onPrimary = mtd_onPrimary,
+    primaryContainer = mtd_primaryContainer,
+    onPrimaryContainer = mtd_onPrimaryContainer,
+    secondary = mtd_secondary,
+    onSecondary = mtd_onSecondary,
+    secondaryContainer = mtd_secondaryContainer,
+    onSecondaryContainer = mtd_onSecondaryContainer,
+    tertiary = mtd_tertiary,
+    onTertiary = mtd_onTertiary,
+    tertiaryContainer = mtd_tertiaryContainer,
+    onTertiaryContainer = mtd_onTertiaryContainer,
+    error = mtd_error,
+    errorContainer = mtd_errorContainer,
+    onError = mtd_onError,
+    onErrorContainer = mtd_onErrorContainer,
+    background = mtd_background,
+    onBackground = mtd_onBackground,
+    surface = mtd_surface,
+    onSurface = mtd_onSurface,
+    surfaceVariant = mtd_surfaceVariant,
+    onSurfaceVariant = mtd_onSurfaceVariant,
+    outline = mtd_outline,
+    inverseOnSurface = mtd_inverseOnSurface,
+    inverseSurface = mtd_inverseSurface,
+    inversePrimary = mtd_inversePrimary,
+    surfaceTint = mtd_surfaceTint,
+    outlineVariant = mtd_outlineVariant,
+    scrim = mtd_scrim,
 )
 
 @Composable
 fun PomoTasksTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
     val view = LocalView.current
+    val colorScheme = if(!darkTheme) LightColors else DarkColors
+
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
