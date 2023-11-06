@@ -52,13 +52,13 @@ fun PreviewMainScreen() {
 @Composable
 fun AppFloatActionButton(icon: Painter, onClick: () -> Unit) {
     FloatingActionButton(
-        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
         shape = RoundedCornerShape(16.dp),
         onClick = onClick
     ) {
         Icon(
             painter = icon,
-            tint = MaterialTheme.colorScheme.onTertiaryContainer,
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
             contentDescription = null,
         )
     }
