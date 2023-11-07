@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,20 +29,38 @@ import com.fesvieira.pomotasks.helpers.formatToString
 import com.fesvieira.pomotasks.ui.components.ClockComponent
 import com.fesvieira.pomotasks.ui.components.ClockState
 import com.fesvieira.pomotasks.ui.theme.PomoTasksTheme
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
 
-    val seconds by remember { mutableStateOf(1500) }
+    var seconds by remember { mutableStateOf(1500) }
     val minutesString by remember(seconds) {
-        derivedStateOf { (seconds / 60).formatToString }
+        derivedStateOf {
+            val time = (seconds / 60)
+            if (time == 0) "" else time.toString()
+        }
     }
     val secondsString by remember(seconds) {
         derivedStateOf { (seconds % 60).formatToString }
     }
 
     var clockState by remember{ mutableStateOf(ClockState.PAUSED) }
+
+    LaunchedEffect(clockState) {
+        val timerJob = async {
+            while (true) {
+                delay(1000)
+                seconds -= 1
+            }
+        }
+        when(clockState) {
+            ClockState.PAUSED, ClockState.STOPPED -> timerJob.cancel()
+            ClockState.PLAYING -> timerJob.start()
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -66,7 +85,9 @@ fun MainScreen() {
                     clockState = clockState,
                     minutes = minutesString,
                     seconds = secondsString,
-                    onMinutesChange = {},
+                    onMinutesChange = { minutesString ->
+                        seconds = (minutesString.toIntOrNull() ?: 0) * 60
+                    },
                     onClockStateChange = { newClockState ->
                         clockState = newClockState
                     }

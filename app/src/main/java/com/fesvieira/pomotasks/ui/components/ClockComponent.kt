@@ -68,14 +68,17 @@ fun ClockComponent(
             .border(10.dp, MaterialTheme.colorScheme.tertiary, CircleShape)
 
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             AnimatedVisibility(visible = clockState == ClockState.STOPPED) {
                 TimerPickerComponent(minutes = minutes, onMinutesChanged = onMinutesChange)
             }
 
             AnimatedVisibility(visible = clockState != ClockState.STOPPED) {
                 Text(
-                    text = "$minutes:$seconds",
+                    text = if(minutes.isNotEmpty()) "$minutes:$seconds" else seconds,
                     fontSize = 60.sp,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -88,14 +91,16 @@ fun ClockComponent(
                         else R.drawable.ic_play
                     ),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.tertiary,
+                    tint = MaterialTheme.colorScheme.tertiary.copy(alpha = if (minutes == "") 0.4f else 1.0f),
                     modifier = Modifier
                         .size(40.dp)
                         .clickable {
-                            onClockStateChange(
-                                if (clockState == ClockState.PLAYING) ClockState.PAUSED
-                                else ClockState.PLAYING
-                            )
+                            if (clockState == ClockState.PLAYING || minutes != "") {
+                                onClockStateChange(
+                                    if (clockState == ClockState.PLAYING) ClockState.PAUSED
+                                    else ClockState.PLAYING
+                                )
+                            }
                         }
                 )
 
