@@ -47,13 +47,18 @@ fun ClockComponent(
             .background(
                 brush = Brush.radialGradient(
                     with(MaterialTheme.colorScheme.onBackground) {
-                        listOf(
-                            this.copy(alpha = 1.0f),
-                            this.copy(alpha = 0.8f),
-                            this.copy(alpha = 0.5f),
-                            this.copy(alpha = 0.3f),
-                            this.copy(alpha = 0.01f),
-                        )
+                        if (clockState == ClockState.PLAYING) {
+                            listOf(
+                                this.copy(alpha = 1.0f),
+                                this.copy(alpha = 0.8f),
+                                this.copy(alpha = 0.5f),
+                                this.copy(alpha = 0.3f),
+                                this.copy(alpha = 0.01f),
+                            )
+                        } else {
+                            listOf(this.copy(alpha = 0.0f), this.copy(alpha = 0.0f))
+                        }
+
                     },
                 ),
                 CircleShape
