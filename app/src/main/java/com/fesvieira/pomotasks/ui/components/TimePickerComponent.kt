@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
@@ -37,7 +36,6 @@ fun TimerPickerComponent(
     minutes: String,
     onMinutesChanged: (String) -> Unit,
 ) {
-    val focusManager = LocalFocusManager.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -46,11 +44,6 @@ fun TimerPickerComponent(
         TimerPickerTextField(
             time = minutes,
             onTimeChanged = {
-                if (it.length > 2) {
-                    onMinutesChanged(it.takeLast(1))
-                } else if (it.length > 1) {
-                    focusManager.clearFocus()
-                }
                 onMinutesChanged(it)
             }
         )
@@ -63,6 +56,8 @@ private fun TimerPickerTextField(
     onTimeChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    val focusManager = LocalFocusManager.current
     var isFocused by remember { mutableStateOf(false) }
     val backgroundColor by animateColorAsState(
         targetValue =
@@ -76,6 +71,11 @@ private fun TimerPickerTextField(
         onValueChange = {
             if (it.length < 3) {
                 onTimeChanged(it)
+            }
+            if (it.length > 2) {
+                onTimeChanged(it.takeLast(1))
+            } else if (it.length > 1) {
+                focusManager.clearFocus()
             }
         },
         textStyle = TextStyle(
