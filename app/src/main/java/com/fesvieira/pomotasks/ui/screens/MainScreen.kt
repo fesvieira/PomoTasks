@@ -32,31 +32,27 @@ import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-
-    var seconds by remember { mutableStateOf(1500) }
-    val minutesString by remember(seconds) {
-        derivedStateOf {
-            val time = (seconds / 60)
-            if (time == 0) "" else time.toString()
-        }
-    }
-    val secondsString by remember(seconds) {
-        derivedStateOf { (seconds % 60).formatToString }
-    }
+    var totalMillis by remember { mutableStateOf(60000) }
+    var millis by remember { mutableStateOf(60000) }
 
     var clockState by remember{ mutableStateOf(ClockState.PAUSED) }
 
     LaunchedEffect(clockState) {
         val timerJob = async {
-            while (true) {
-                delay(1000)
-                seconds -= 1
+            while (millis > 0) {
+                delay(50)
+                millis -= 50
             }
         }
+
         when(clockState) {
             ClockState.PAUSED, ClockState.STOPPED -> timerJob.cancel()
             ClockState.PLAYING -> timerJob.start()
         }
+    }
+
+    LaunchedEffect(millis) {
+        if (millis > 0) return@LaunchedEffect
     }
 
     Surface(
@@ -80,10 +76,11 @@ fun MainScreen() {
             ) {
                 ClockComponent(
                     clockState = clockState,
-                    minutes = minutesString,
-                    seconds = secondsString,
+                    millis = millis,
+                    totalMillis = totalMillis,
                     onMinutesChange = { minutesString ->
-                        seconds = (minutesString.toIntOrNull() ?: 0) * 60
+                        totalMillis = (minutesString.toIntOrNull() ?: 0) * 60000
+                        millis = totalMillis
                     },
                     onClockStateChange = { newClockState ->
                         clockState = newClockState
