@@ -8,7 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -35,36 +35,32 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-
-    var seconds by remember { mutableStateOf(1500) }
-    val minutesString by remember(seconds) {
-        derivedStateOf {
-            val time = (seconds / 60)
-            if (time == 0) "" else time.toString()
-        }
-    }
-    val secondsString by remember(seconds) {
-        derivedStateOf { (seconds % 60).formatToString }
-    }
+    var totalMillis by remember { mutableStateOf(60000) }
+    var millis by remember { mutableStateOf(60000) }
 
     var clockState by remember{ mutableStateOf(ClockState.PAUSED) }
 
     LaunchedEffect(clockState) {
         val timerJob = async {
-            while (true) {
-                delay(1000)
-                seconds -= 1
+            while (millis > 0) {
+                delay(50)
+                millis -= 50
             }
         }
+
         when(clockState) {
             ClockState.PAUSED, ClockState.STOPPED -> timerJob.cancel()
             ClockState.PLAYING -> timerJob.start()
         }
     }
 
+    LaunchedEffect(millis) {
+        if (millis > 0) return@LaunchedEffect
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = mtc.background
     ) {
         Scaffold(
             floatingActionButton = {
@@ -79,14 +75,15 @@ fun MainScreen() {
                     .padding(it)
                     .padding(16.dp)
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(mtc.background)
             ) {
                 ClockComponent(
                     clockState = clockState,
-                    minutes = minutesString,
-                    seconds = secondsString,
+                    millis = millis,
+                    totalMillis = totalMillis,
                     onMinutesChange = { minutesString ->
-                        seconds = (minutesString.toIntOrNull() ?: 0) * 60
+                        totalMillis = (minutesString.toIntOrNull() ?: 0) * 60000
+                        millis = totalMillis
                     },
                     onClockStateChange = { newClockState ->
                         clockState = newClockState
@@ -108,13 +105,13 @@ fun PreviewMainScreen() {
 @Composable
 fun AppFloatActionButton(icon: Painter, onClick: () -> Unit) {
     FloatingActionButton(
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        containerColor = mtc.secondaryContainer,
         shape = RoundedCornerShape(16.dp),
         onClick = onClick
     ) {
         Icon(
             painter = icon,
-            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+            tint = mtc.onSecondaryContainer,
             contentDescription = null,
         )
     }
