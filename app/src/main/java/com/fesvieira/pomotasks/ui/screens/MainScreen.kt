@@ -31,10 +31,10 @@ import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    var totalMillis by remember { mutableStateOf(60000) }
-    var millis by remember { mutableStateOf(60000) }
+    var totalMillis by remember { mutableStateOf(25*60*1000) }
+    var millis by remember { mutableStateOf(25*60*1000) }
 
-    var clockState by remember{ mutableStateOf(ClockState.PAUSED) }
+    var clockState by remember{ mutableStateOf(ClockState.STOPPED) }
 
     LaunchedEffect(clockState) {
         val timerJob = async {
@@ -52,6 +52,8 @@ fun MainScreen() {
 
     LaunchedEffect(millis) {
         if (millis > 0) return@LaunchedEffect
+        millis = totalMillis
+        clockState = ClockState.STOPPED
     }
 
     Surface(
