@@ -1,6 +1,8 @@
 package com.fesvieira.pomotasks.ui.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +39,7 @@ enum class ClockState {
     PLAYING
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ClockComponent(
     clockState: ClockState,
@@ -45,13 +49,16 @@ fun ClockComponent(
     onClockStateChange: (ClockState) -> Unit
 ) {
     val progressPercentage by animateFloatAsState(
-        if (totalMillis == 0) { 1f }
-        else {millis.toFloat() / totalMillis.toFloat()},
+        if (totalMillis == 0) {
+            1f
+        } else {
+            millis.toFloat() / totalMillis.toFloat()
+        },
         label = "progressPercentage",
     )
 
     val time by remember(millis) {
-        derivedStateOf { (millis / 1000) }
+        derivedStateOf { millis / 1000 }
     }
 
     val minutes by remember(time) {
@@ -106,32 +113,40 @@ fun ClockComponent(
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Icon(
-                        painter = painterResource(
-                            if (clockState == ClockState.PLAYING) R.drawable.ic_pause
-                            else R.drawable.ic_play
-                        ),
-                        contentDescription = null,
-                        tint = mtc.tertiary.copy(alpha = if (minutes == "") 0.4f else 1.0f),
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable {
-                                if (clockState == ClockState.PLAYING || minutes != "") {
-                                    onClockStateChange(
-                                        if (clockState == ClockState.PLAYING) ClockState.PAUSED
-                                        else ClockState.PLAYING
-                                    )
-                                }
-                            }
-                    )
+                    AnimatedContent(
+                        targetState = if (clockState == ClockState.PLAYING) R.drawable.ic_pause
+                        else R.drawable.ic_play, label = "animIcon"
+                    ) { id ->
+                        Icon(
+                            painter = painterResource(id),
+                            contentDescription = null,
+                            tint = mtc.tertiary.copy(alpha = if (minutes == "") 0.4f else 1.0f),
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .then(
+                                    if (clockState == ClockState.PLAYING || minutes != "") {
+                                        Modifier.clickable {
+                                            onClockStateChange(
+                                                if (clockState == ClockState.PLAYING) ClockState.PAUSED
+                                                else ClockState.PLAYING
+                                            )
+                                        }
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                        )
+                    }
 
-                    if (clockState == ClockState.PAUSED) {
+                    AnimatedVisibility(visible = clockState == ClockState.PAUSED) {
                         Icon(
                             painter = painterResource(R.drawable.ic_stop),
                             contentDescription = null,
                             tint = mtc.tertiary,
                             modifier = Modifier
                                 .size(40.dp)
+                                .clip(CircleShape)
                                 .clickable {
                                     onClockStateChange(ClockState.STOPPED)
                                 }
