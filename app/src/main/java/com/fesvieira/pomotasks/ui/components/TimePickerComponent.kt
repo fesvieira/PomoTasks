@@ -69,14 +69,9 @@ private fun TimerPickerTextField(
     BasicTextField(
         value = time,
         onValueChange = {
-            if (it.length < 3) {
-                onTimeChanged(it)
-            }
-            if (it.length > 2) {
-                onTimeChanged(it.takeLast(1))
-            } else if (it.length > 1) {
-                focusManager.clearFocus()
-            }
+            if (it.length > 2 || it.toIntOrNull() == null) return@BasicTextField
+            onTimeChanged(it)
+            if (it.length > 1) focusManager.clearFocus()
         },
         textStyle = TextStyle(
             fontSize = 60.sp,
