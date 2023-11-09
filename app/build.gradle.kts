@@ -70,4 +70,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
+    // Work Manager
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+
 }

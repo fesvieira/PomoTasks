@@ -6,7 +6,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fesvieira.pomotasks.R
 
 @Composable
 fun AppFloatActionButton(icon: Painter, onClick: () -> Unit) {
@@ -21,4 +24,10 @@ fun AppFloatActionButton(icon: Painter, onClick: () -> Unit) {
             contentDescription = null,
         )
     }
+}
+
+@Preview
+@Composable
+fun PreviewAppFloatActionButton() {
+    AppFloatActionButton(icon = painterResource(R.drawable.ic_add)) {}
 }
