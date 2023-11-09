@@ -56,7 +56,7 @@ fun MainScreen() {
             } else {
                 Toast.makeText(
                     context,
-                    "We need notification permission to play Pomodoro Alarms",
+                    "We need permission to play Alarms",
                     Toast.LENGTH_LONG
                 ).show()
             }
