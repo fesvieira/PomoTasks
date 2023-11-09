@@ -12,14 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,7 +45,7 @@ fun ClockComponent(
         modifier = Modifier
             .background(
                 brush = Brush.radialGradient(
-                    with(MaterialTheme.colorScheme.onBackground) {
+                    with(mtc.onBackground) {
                         if (clockState == ClockState.PLAYING) {
                             listOf(
                                 this.copy(alpha = 1.0f),
@@ -64,13 +63,10 @@ fun ClockComponent(
                 CircleShape
             )
             .padding(20.dp)
-            .background(
-                MaterialTheme.colorScheme.tertiaryContainer,
-                CircleShape
-            )
+            .background(mtc.tertiaryContainer, CircleShape)
             .padding(16.dp)
             .size(240.dp)
-            .border(10.dp, MaterialTheme.colorScheme.tertiary, CircleShape)
+            .border(10.dp, mtc.tertiary, CircleShape)
 
     ) {
         Column(
@@ -85,7 +81,7 @@ fun ClockComponent(
                 Text(
                     text = if(minutes.isNotEmpty()) "$minutes:$seconds" else seconds,
                     fontSize = 60.sp,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = mtc.onBackground
                 )
             }
 
@@ -96,7 +92,7 @@ fun ClockComponent(
                         else R.drawable.ic_play
                     ),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.tertiary.copy(alpha = if (minutes == "") 0.4f else 1.0f),
+                    tint = mtc.tertiary.copy(alpha = if (minutes == "") 0.4f else 1.0f),
                     modifier = Modifier
                         .size(40.dp)
                         .clickable {
@@ -113,7 +109,7 @@ fun ClockComponent(
                     Icon(
                         painter = painterResource(R.drawable.ic_stop),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
+                        tint = mtc.tertiary,
                         modifier = Modifier
                             .size(40.dp)
                             .clickable {
@@ -132,7 +128,7 @@ fun PreviewClockComponent() {
     val view: @Composable () -> Unit = {
         Box(
             Modifier
-                .background(MaterialTheme.colorScheme.background)
+                .background(mtc.background)
                 .padding(16.dp)
         ) {
             ClockComponent(
