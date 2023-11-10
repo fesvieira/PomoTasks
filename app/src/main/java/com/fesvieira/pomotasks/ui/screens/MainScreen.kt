@@ -9,6 +9,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -26,6 +28,7 @@ import com.fesvieira.pomotasks.helpers.isAllowedTo
 import com.fesvieira.pomotasks.ui.components.AppFloatActionButton
 import com.fesvieira.pomotasks.ui.components.ClockComponent
 import com.fesvieira.pomotasks.ui.components.ClockState
+import com.fesvieira.pomotasks.ui.components.TaskCard
 import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +40,7 @@ fun MainScreen(
     val clockState by pomodoroViewModel.clockState.collectAsState()
     val totalMillis by pomodoroViewModel.totalMillis.collectAsState()
     val millis by pomodoroViewModel.millis.collectAsState()
+    val tasks by pomodoroViewModel.tasksListStateFlow.collectAsState()
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -64,7 +68,7 @@ fun MainScreen(
                 }
             }
         ) {
-            Column(
+            LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .padding(it)
@@ -72,30 +76,36 @@ fun MainScreen(
                     .fillMaxSize()
                     .background(mtc.background)
             ) {
-                ClockComponent(
-                    clockState = clockState,
-                    millis = millis,
-                    totalMillis = totalMillis,
-                    onMinutesChange = { minutesString ->
-                        val newValue = (minutesString.toLongOrNull() ?: 0L) * 60000L
-                        pomodoroViewModel.setTotalMillis(newValue)
-                        pomodoroViewModel.setMillis(newValue)
-                    },
-                    onClockStateChange = { newClockState ->
-                        if (
-                            newClockState == ClockState.PLAYING &&
-                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                        ) {
-                            if (context.isAllowedTo(POST_NOTIFICATIONS)) {
-                                pomodoroViewModel.setClockState(newClockState)
+                item {
+                    ClockComponent(
+                        clockState = clockState,
+                        millis = millis,
+                        totalMillis = totalMillis,
+                        onMinutesChange = { minutesString ->
+                            val newValue = (minutesString.toLongOrNull() ?: 0L) * 60000L
+                            pomodoroViewModel.setTotalMillis(newValue)
+                            pomodoroViewModel.setMillis(newValue)
+                        },
+                        onClockStateChange = { newClockState ->
+                            if (
+                                newClockState == ClockState.PLAYING &&
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                            ) {
+                                if (context.isAllowedTo(POST_NOTIFICATIONS)) {
+                                    pomodoroViewModel.setClockState(newClockState)
+                                } else {
+                                    permissionsLauncher.launch(POST_NOTIFICATIONS)
+                                }
                             } else {
-                                permissionsLauncher.launch(POST_NOTIFICATIONS)
+                                pomodoroViewModel.setClockState(newClockState)
                             }
-                        } else {
-                            pomodoroViewModel.setClockState(newClockState)
                         }
-                    }
-                )
+                    )
+                }
+
+                items(tasks) { task ->
+                    TaskCard(title = task.name, isDone = task.isDone, onCheckedChange = {})
+                }
             }
         }
     }

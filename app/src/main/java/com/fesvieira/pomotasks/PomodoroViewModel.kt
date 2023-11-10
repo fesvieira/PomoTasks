@@ -2,8 +2,10 @@ package com.fesvieira.pomotasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fesvieira.pomotasks.alarmmanager.AlarmItem
 import com.fesvieira.pomotasks.alarmmanager.AndroidAlarmScheduler
+import com.fesvieira.pomotasks.data.Task
 import com.fesvieira.pomotasks.repositories.TaskRepository
 import com.fesvieira.pomotasks.repositories.UserPreferencesRepository
 import com.fesvieira.pomotasks.ui.components.ClockState
@@ -12,8 +14,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
@@ -26,7 +33,7 @@ class PomodoroViewModel @Inject constructor(
     private val alarmScheduler: AndroidAlarmScheduler,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val taskRepository: TaskRepository
-): ViewModel() {
+) : ViewModel() {
 
     private var alarmTime: LocalDateTime? = null
     var alarmItem: AlarmItem? = null
@@ -39,6 +46,11 @@ class PomodoroViewModel @Inject constructor(
 
     private val _totalMillis = MutableStateFlow(25 * 60000L)
     val totalMillis: StateFlow<Long> = _totalMillis
+
+    val tasksListStateFlow = flow<List<Task>> {
+        taskRepository.getTasks()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
 
     private var timerJob: Job? = null
 
@@ -74,6 +86,10 @@ class PomodoroViewModel @Inject constructor(
                     }
                 }
             }
+        }
+
+        viewModelScope.launch {
+            taskRepository.getTasks()
         }
     }
 
