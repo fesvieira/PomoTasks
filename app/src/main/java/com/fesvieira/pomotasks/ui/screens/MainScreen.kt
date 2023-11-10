@@ -7,8 +7,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -53,6 +59,7 @@ import com.fesvieira.pomotasks.ui.components.ClockComponent
 import com.fesvieira.pomotasks.ui.components.ClockState
 import com.fesvieira.pomotasks.ui.components.TaskCard
 import com.fesvieira.pomotasks.ui.components.TaskEditDialog
+import com.fesvieira.pomotasks.ui.theme.Typography
 import com.fesvieira.pomotasks.ui.theme.mtl_error
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -104,6 +111,7 @@ fun MainScreen(
                     .padding(it)
                     .fillMaxSize()
                     .background(mtc.background)
+                    .animateContentSize()
             ) {
                 item {
                     ClockComponent(
@@ -132,7 +140,7 @@ fun MainScreen(
                     )
                 }
 
-                items(tasks, key = {task -> task.id}) { task ->
+                items(tasks, key = { task -> task.id }) { task ->
                     val dismissState = rememberDismissState(
                         confirmValueChange = { dismissValue ->
                             if (dismissValue == DismissValue.DismissedToStart) {
@@ -144,24 +152,79 @@ fun MainScreen(
                         positionalThreshold = { 0.3f }
                     )
 
-                    SwipeToDismiss(
-                        state = dismissState,
-                        directions = setOf(DismissDirection.EndToStart),
-                        background = { SwipeToDismissDynamicBackground(dismissState) },
-                        dismissContent = {
-                            TaskCard(
-                                title = task.name,
-                                isDone = task.isDone,
-                                onCheckedChange = { pomodoroViewModel.toggleTaskDone(task)},
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .clickable {
-                                        pomodoroViewModel.editTask(task)
-                                    }
-                            )
+                    AnimatedVisibility(
+                        visible = !task.isDone,
+                        enter = slideInVertically { it } + fadeIn(),
+                        exit = slideOutVertically { it } + fadeOut()
+                    ) {
+                        SwipeToDismiss(
+                            state = dismissState,
+                            directions = setOf(DismissDirection.EndToStart),
+                            background = { SwipeToDismissDynamicBackground(dismissState) },
+                            dismissContent = {
+                                TaskCard(
+                                    title = task.name,
+                                    isDone = task.isDone,
+                                    onCheckedChange = { pomodoroViewModel.toggleTaskDone(task) },
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp)
+                                        .clickable {
+                                            pomodoroViewModel.editTask(task)
+                                        }
+                                )
+                            },
+                            modifier = Modifier.animateItemPlacement(animationSpec = tween(200))
+                        )
+                    }
+                }
+
+                item {
+                    AnimatedVisibility(visible = tasks.any { it.isDone }) {
+                        Text(
+                            text = "Completed!",
+                            style = Typography.labelLarge,
+                            color = mtc.onBackground,
+                            modifier = Modifier.padding(top = 40.dp)
+                        )
+                    }
+                }
+
+                items(tasks, key = { "${it.id}"}) { task ->
+                    val dismissState = rememberDismissState(
+                        confirmValueChange = { dismissValue ->
+                            if (dismissValue == DismissValue.DismissedToStart) {
+                                pomodoroViewModel.deleteTask(task)
+                            }
+
+                            true
                         },
-                        modifier = Modifier.animateItemPlacement(animationSpec = tween(200))
+                        positionalThreshold = { 0.3f }
                     )
+
+                    AnimatedVisibility(
+                        visible = task.isDone,
+                        enter = slideInVertically { -it } + fadeIn(),
+                        exit = slideOutVertically { -it } + fadeOut()
+                    ) {
+                        SwipeToDismiss(
+                            state = dismissState,
+                            directions = setOf(DismissDirection.EndToStart),
+                            background = { SwipeToDismissDynamicBackground(dismissState) },
+                            dismissContent = {
+                                TaskCard(
+                                    title = task.name,
+                                    isDone = task.isDone,
+                                    onCheckedChange = { pomodoroViewModel.toggleTaskDone(task) },
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.dp)
+                                        .clickable {
+                                            pomodoroViewModel.editTask(task)
+                                        }
+                                )
+                            },
+                            modifier = Modifier.animateItemPlacement(animationSpec = tween(200))
+                        )
+                    }
                 }
             }
 
