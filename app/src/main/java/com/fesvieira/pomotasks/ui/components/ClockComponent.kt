@@ -43,30 +43,26 @@ enum class ClockState {
 @Composable
 fun ClockComponent(
     clockState: ClockState,
-    millis: Int,
-    totalMillis: Int,
+    seconds: Long,
+    totalSeconds: Long,
     onMinutesChange: (String) -> Unit,
     onClockStateChange: (ClockState) -> Unit
 ) {
     val progressPercentage by animateFloatAsState(
-        if (totalMillis == 0) {
+        if (totalSeconds == 0L) {
             1f
         } else {
-            millis.toFloat() / totalMillis.toFloat()
+            seconds.toFloat() / totalSeconds.toFloat()
         },
         label = "progressPercentage",
     )
 
-    val time by remember(millis) {
-        derivedStateOf { millis / 1000 }
+    val minutes by remember(seconds) {
+        derivedStateOf { if (seconds == 0L) "" else (seconds / 60).toString() }
     }
 
-    val minutes by remember(time) {
-        derivedStateOf { if (time == 0) "" else (time / 60).toString() }
-    }
-
-    val seconds by remember(time) {
-        derivedStateOf { (time % 60).formatToString }
+    val secondsString by remember(seconds) {
+        derivedStateOf { (seconds % 60).formatToString }
     }
 
     Box {
@@ -106,7 +102,7 @@ fun ClockComponent(
 
                 AnimatedVisibility(visible = clockState != ClockState.STOPPED) {
                     Text(
-                        text = if (minutes.isNotEmpty()) "$minutes:$seconds" else seconds,
+                        text = if (minutes.isNotEmpty()) "$minutes:$secondsString" else secondsString,
                         fontSize = 60.sp,
                         color = mtc.onBackground
                     )
@@ -178,8 +174,8 @@ fun PreviewClockComponent() {
         ) {
             ClockComponent(
                 clockState = ClockState.PLAYING,
-                millis = 1,
-                totalMillis = 1,
+                seconds = 1,
+                totalSeconds = 1,
                 onMinutesChange = { },
                 onClockStateChange = { }
             )

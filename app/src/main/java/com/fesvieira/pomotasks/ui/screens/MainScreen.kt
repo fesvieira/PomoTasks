@@ -1,7 +1,6 @@
 package com.fesvieira.pomotasks.ui.screens
 
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -25,7 +24,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.work.WorkerParameters
 import com.fesvieira.pomotasks.R
 import com.fesvieira.pomotasks.helpers.isAllowedTo
 import com.fesvieira.pomotasks.ui.components.AppFloatActionButton
@@ -33,19 +31,20 @@ import com.fesvieira.pomotasks.ui.components.ClockComponent
 import com.fesvieira.pomotasks.ui.components.ClockState
 import com.fesvieira.pomotasks.ui.theme.PomoTasksTheme
 import com.fesvieira.pomotasks.workers.NotificationService
-import com.fesvieira.pomotasks.workers.NotificationWorker
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import java.time.Duration
+import java.time.LocalDateTime
 import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 
-@SuppressLint("RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    var totalMillis by remember { mutableStateOf(25 * 60 * 1000) }
-    var millis by remember { mutableStateOf(25 * 60 * 1000) }
+    var totalSeconds by remember { mutableStateOf(25 * 60L) }
+    var seconds by remember { mutableStateOf(25 * 60L) }
     var clockState by remember { mutableStateOf(ClockState.STOPPED) }
     val context = LocalContext.current
+    var alarmTime by remember { mutableStateOf<LocalDateTime?>(null)}
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -64,10 +63,11 @@ fun MainScreen() {
 
     LaunchedEffect(clockState) {
         val timerJob = async {
-            while (millis > 0) {
-                delay(50)
-                millis -= 50
-                if (millis == 0) {
+            alarmTime = LocalDateTime.now().plusSeconds(seconds + 1)
+            while (seconds > 0) {
+                delay(1000)
+                seconds = Duration.between(LocalDateTime.now(), alarmTime).seconds
+                if (seconds <= 0L) {
                     NotificationService.scheduleNotification(context)
                 }
             }
@@ -77,12 +77,6 @@ fun MainScreen() {
             ClockState.PAUSED, ClockState.STOPPED -> timerJob.cancel()
             ClockState.PLAYING -> timerJob.start()
         }
-    }
-
-    LaunchedEffect(millis) {
-        if (millis > 0 && clockState == ClockState.PLAYING) return@LaunchedEffect
-        millis = totalMillis
-        clockState = ClockState.STOPPED
     }
 
     Surface(
@@ -106,11 +100,11 @@ fun MainScreen() {
             ) {
                 ClockComponent(
                     clockState = clockState,
-                    millis = millis,
-                    totalMillis = totalMillis,
+                    seconds = seconds,
+                    totalSeconds = totalSeconds,
                     onMinutesChange = { minutesString ->
-                        totalMillis = (minutesString.toIntOrNull() ?: 0) * 60000
-                        millis = totalMillis
+                        totalSeconds = (minutesString.toLongOrNull() ?: 0L) * 60L
+                        seconds = totalSeconds
                     },
                     onClockStateChange = { newClockState ->
                         if (
