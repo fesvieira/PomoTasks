@@ -67,7 +67,7 @@ class PomodoroViewModel @Inject constructor(
                                 alarmTime
                             ).toMillis()
 
-                        if (millis.value <= 0L) {
+                        if (_millis.value <= 0L) {
                             _clockState.value = ClockState.STOPPED
                             _millis.value = _totalMillis.value
                         }
