@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fesvieira.pomotasks.alarmmanager.AlarmItem
 import com.fesvieira.pomotasks.alarmmanager.AndroidAlarmScheduler
+import com.fesvieira.pomotasks.repositories.TaskRepository
 import com.fesvieira.pomotasks.repositories.UserPreferencesRepository
 import com.fesvieira.pomotasks.ui.components.ClockState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -17,10 +19,13 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import javax.inject.Inject
 
-class PomodoroViewModel(
+@HiltViewModel
+class PomodoroViewModel @Inject constructor(
     private val alarmScheduler: AndroidAlarmScheduler,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val taskRepository: TaskRepository
 ): ViewModel() {
 
     private var alarmTime: LocalDateTime? = null
