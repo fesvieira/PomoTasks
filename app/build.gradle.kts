@@ -50,6 +50,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.room:room-common:2.6.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
@@ -75,4 +76,11 @@ dependencies {
 
     // Datastore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Room
+    implementation("androidx.room:room-runtime:2.6.0")
+    annotationProcessor("androidx.room:room-compiler:2.6.0")
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:2.6.0")
 }
