@@ -35,8 +35,8 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val clockState by pomodoroViewModel.clockState.collectAsState()
-    val totalSeconds by pomodoroViewModel.totalSeconds.collectAsState()
-    val seconds by pomodoroViewModel.seconds.collectAsState()
+    val totalMillis by pomodoroViewModel.totalMillis.collectAsState()
+    val millis by pomodoroViewModel.millis.collectAsState()
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -74,12 +74,12 @@ fun MainScreen(
             ) {
                 ClockComponent(
                     clockState = clockState,
-                    seconds = seconds,
-                    totalSeconds = totalSeconds,
+                    millis = millis,
+                    totalMillis = totalMillis,
                     onMinutesChange = { minutesString ->
-                        val newValue = (minutesString.toLongOrNull() ?: 0L) * 60L
-                        pomodoroViewModel.setTotalSeconds(newValue)
-                        pomodoroViewModel.setSeconds(newValue)
+                        val newValue = (minutesString.toLongOrNull() ?: 0L) * 60000L
+                        pomodoroViewModel.setTotalMillis(newValue)
+                        pomodoroViewModel.setMillis(newValue)
                     },
                     onClockStateChange = { newClockState ->
                         if (

@@ -43,19 +43,23 @@ enum class ClockState {
 @Composable
 fun ClockComponent(
     clockState: ClockState,
-    seconds: Long,
-    totalSeconds: Long,
+    millis: Long,
+    totalMillis: Long,
     onMinutesChange: (String) -> Unit,
     onClockStateChange: (ClockState) -> Unit
 ) {
     val progressPercentage by animateFloatAsState(
-        if (totalSeconds == 0L) {
+        if (totalMillis == 0L) {
             1f
         } else {
-            seconds.toFloat() / totalSeconds.toFloat()
+            millis.toFloat() / totalMillis.toFloat()
         },
         label = "progressPercentage",
     )
+
+    val seconds by remember(millis) {
+        derivedStateOf { millis / 1000 }
+    }
 
     val minutes by remember(seconds) {
         derivedStateOf { if (seconds == 0L) "" else (seconds / 60).toString() }
@@ -176,8 +180,8 @@ fun PreviewClockComponent() {
         ) {
             ClockComponent(
                 clockState = ClockState.PLAYING,
-                seconds = 1,
-                totalSeconds = 1,
+                millis = 1,
+                totalMillis = 1,
                 onMinutesChange = { },
                 onClockStateChange = { }
             )
