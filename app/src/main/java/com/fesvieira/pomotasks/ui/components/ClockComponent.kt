@@ -110,8 +110,10 @@ fun ClockComponent(
 
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     AnimatedContent(
-                        targetState = if (clockState == ClockState.PLAYING) R.drawable.ic_pause
-                        else R.drawable.ic_play, label = "animIcon"
+                        targetState =
+                        if (clockState == ClockState.PLAYING) R.drawable.ic_pause
+                        else R.drawable.ic_play,
+                        label = "animIcon"
                     ) { id ->
                         Icon(
                             painter = painterResource(id),

@@ -43,9 +43,7 @@ fun TimerPickerComponent(
     ) {
         TimerPickerTextField(
             time = minutes,
-            onTimeChanged = {
-                onMinutesChanged(it)
-            }
+            onTimeChanged = onMinutesChanged
         )
     }
 }
