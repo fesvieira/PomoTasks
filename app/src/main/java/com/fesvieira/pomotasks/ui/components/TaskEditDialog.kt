@@ -37,23 +37,24 @@ fun TaskEditDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp),
+            verticalArrangement = Arrangement.spacedBy(48.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(mtc.primaryContainer, RoundedCornerShape(32.dp))
-                .padding(16.dp)
+                .background(mtc.surfaceVariant, RoundedCornerShape(16.dp))
+                .border(2.dp, mtc.secondary, RoundedCornerShape(16.dp))
+                .padding(32.dp)
         ) {
             Text(
                 text = "Task Editor",
-                style = Typography.labelMedium,
+                style = Typography.titleSmall,
                 color = mtc.onBackground
             )
 
             OutlinedTextField(
                 value = taskName,
                 onValueChange = { taskName = it },
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedCornerShape(8.dp),
                 textStyle = Typography.bodyMedium,
                 label = { Text(text = "Task name") },
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
@@ -64,7 +65,10 @@ fun TaskEditDialog(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                Button(onClick = { onAddTask(taskName) }) {
+                Button(
+                    onClick = { onAddTask(taskName) },
+                    enabled = taskName.isNotEmpty() && taskName.isNotBlank()
+                ) {
                     Text(text = "Ok")
                 }
 

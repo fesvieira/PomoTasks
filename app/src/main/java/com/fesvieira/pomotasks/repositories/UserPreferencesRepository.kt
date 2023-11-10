@@ -16,22 +16,15 @@ class UserPreferencesRepository(
 ) {
     // KEYS
     private companion object {
-        val LAST_CLOCK_STATE = stringPreferencesKey("last_clock_state")
         val LAST_ALARM_TIMESTAMP = longPreferencesKey("last_alarm_timestamp")
         val LAST_ALARM_TOTAL_MILLIS = longPreferencesKey("last_alarm_total_millis")
     }
 
     // GETTERS
-    val lastClockState: Flow<String> = dataStore.data
+    val lastAlarmTimeStamp: Flow<Long?> = dataStore.data
         .catch { emit(emptyPreferences()) }
         .map { preferences ->
-            preferences[LAST_CLOCK_STATE] ?: ClockState.PAUSED.name
-        }
-
-    val lastAlarmTimeStamp: Flow<Long> = dataStore.data
-        .catch { emit(emptyPreferences()) }
-        .map { preferences ->
-            preferences[LAST_ALARM_TIMESTAMP] ?: -1
+            preferences[LAST_ALARM_TIMESTAMP]
         }
 
     val lastAlarmTotalMillis: Flow<Long> = dataStore.data
@@ -41,15 +34,13 @@ class UserPreferencesRepository(
         }
 
     // SETTERS
-    suspend fun saveLastClockState(state: ClockState) {
-        dataStore.edit { preferences ->
-            preferences[LAST_CLOCK_STATE] = state.name
-        }
-    }
-
     suspend fun setLastAlarmTimeStamp(millis: Long?) {
         dataStore.edit { preferences ->
-            preferences[LAST_ALARM_TIMESTAMP] = millis ?: -1
+            if (millis != null) {
+                preferences[LAST_ALARM_TIMESTAMP] = millis
+            } else {
+                preferences.remove(LAST_ALARM_TIMESTAMP)
+            }
         }
     }
 

@@ -2,7 +2,6 @@ package com.fesvieira.pomotasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fesvieira.pomotasks.alarmmanager.AlarmItem
 import com.fesvieira.pomotasks.alarmmanager.AndroidAlarmScheduler
 import com.fesvieira.pomotasks.data.Task
@@ -11,25 +10,17 @@ import com.fesvieira.pomotasks.repositories.UserPreferencesRepository
 import com.fesvieira.pomotasks.ui.components.ClockState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -58,34 +49,14 @@ class PomodoroViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val lastAlarmMillis = userPreferencesRepository.lastAlarmTimeStamp.first()
-            val lastClockState = userPreferencesRepository.lastClockState.first()
-            if (lastAlarmMillis != -1L && lastClockState == ClockState.PLAYING.name) {
-                alarmTime = LocalDateTime
-                    .ofInstant(Instant.ofEpochMilli(lastAlarmMillis), ZoneId.systemDefault())
+            _totalMillis.value = userPreferencesRepository.lastAlarmTotalMillis.first()
 
-                alarmTime?.let {
-                    alarmItem = AlarmItem(it)
-                    _millis.value = Duration.between(LocalDateTime.now(), it).toMillis()
-                }
+            userPreferencesRepository.lastAlarmTimeStamp.first()?.let {
+                if (it > 0) {
+                    alarmTime = LocalDateTime
+                        .ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
 
-                _totalMillis.value = userPreferencesRepository.lastAlarmTotalMillis.first()
-                clockState.value = ClockState.valueOf(lastClockState)
-
-                timerJob = launch {
-                    while (_millis.value > 0) {
-                        delay(50)
-                        _millis.value =
-                            Duration.between(
-                                LocalDateTime.now(),
-                                alarmTime
-                            ).toMillis()
-
-                        if (_millis.value <= 0L) {
-                            _clockState.value = ClockState.STOPPED
-                            _millis.value = _totalMillis.value
-                        }
-                    }
+                    setClockState(ClockState.PLAYING, false)
                 }
             }
         }
@@ -100,11 +71,10 @@ class PomodoroViewModel @Inject constructor(
     private fun scheduleAlarm() {
         alarmTime = LocalDateTime.now().plusSeconds((_millis.value / 1000) + 1L)
         alarmTime?.let { alarmItem = AlarmItem(it) }
-
         alarmItem?.let { alarmScheduler.schedule(it) }
     }
 
-    fun setClockState(state: ClockState) {
+    fun setClockState(state: ClockState, scheduleAlarm: Boolean = true) {
         viewModelScope.launch(Dispatchers.Default) {
             _clockState.value = state
 
@@ -112,19 +82,16 @@ class PomodoroViewModel @Inject constructor(
                 ClockState.PAUSED, ClockState.STOPPED -> {
                     timerJob?.cancel()
                     alarmItem?.let(alarmScheduler::cancel)
-                    alarmItem = null
                 }
 
                 ClockState.PLAYING -> {
-                    scheduleAlarm()
+                    if(scheduleAlarm) scheduleAlarm()
+
                     timerJob = launch {
                         while (_millis.value > 0) {
                             delay(50)
                             _millis.value =
-                                Duration.between(
-                                    LocalDateTime.now(),
-                                    alarmTime
-                                ).toMillis()
+                                Duration.between(LocalDateTime.now(), alarmTime).toMillis()
 
                             if (millis.value <= 0L) {
                                 _clockState.value = ClockState.STOPPED
@@ -158,13 +125,13 @@ class PomodoroViewModel @Inject constructor(
     }
 
     fun deleteTask(task: Task) {
-        viewModelScope.launch(Dispatchers.IO)  {
+        viewModelScope.launch(Dispatchers.IO) {
             taskRepository.deleteTask(task)
         }
     }
 
     fun editTask(task: Task) {
-        viewModelScope.launch(Dispatchers.IO)  {
+        viewModelScope.launch(Dispatchers.IO) {
             taskRepository.updateTask(task)
         }
     }

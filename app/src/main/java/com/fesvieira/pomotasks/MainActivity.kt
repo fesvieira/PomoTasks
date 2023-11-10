@@ -22,7 +22,9 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val pomodoroViewModel: PomodoroViewModel by viewModels()
-    @Inject lateinit var userPreferencesRepository: UserPreferencesRepository
+
+    @Inject
+    lateinit var userPreferencesRepository: UserPreferencesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,22 +43,20 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         lifecycleScope.launch {
-            val clockState = pomodoroViewModel.clockState.value
-            userPreferencesRepository.setLastAlarmTotalMillis(
-                pomodoroViewModel.totalMillis.value
-            )
-            userPreferencesRepository.saveLastClockState(clockState)
-            if (clockState != ClockState.PLAYING) {
-                userPreferencesRepository.setLastAlarmTimeStamp(-1)
-            } else {
-                pomodoroViewModel.alarmItem?.let {
-                    userPreferencesRepository.setLastAlarmTimeStamp(
-                        it.time.toEpochSecond(
-                            OffsetDateTime.now().offset
-                        ) * 1000
-                    )
+            userPreferencesRepository.apply {
+                setLastAlarmTotalMillis(pomodoroViewModel.totalMillis.value)
+
+                if (pomodoroViewModel.clockState.value == ClockState.PLAYING) {
+                    pomodoroViewModel.alarmItem?.let {
+                        setLastAlarmTimeStamp(
+                            it.time.toEpochSecond(OffsetDateTime.now().offset) * 1000
+                        )
+                    }
+                } else {
+                    setLastAlarmTimeStamp(null)
                 }
             }
+
         }
         super.onStop()
     }

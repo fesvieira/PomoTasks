@@ -31,7 +31,7 @@ fun TaskCard(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
             .fillMaxWidth()
-            .background(mtc.primaryContainer, RoundedCornerShape(16.dp))
+            .background(mtc.surfaceVariant, RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
         Text(
@@ -43,7 +43,7 @@ fun TaskCard(
         Checkbox(
             checked = isDone,
             onCheckedChange = onCheckedChange,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(48.dp)
         )
     }
 }

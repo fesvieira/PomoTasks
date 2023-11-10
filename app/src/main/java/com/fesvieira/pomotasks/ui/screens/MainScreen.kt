@@ -36,6 +36,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +54,8 @@ import com.fesvieira.pomotasks.ui.components.ClockState
 import com.fesvieira.pomotasks.ui.components.TaskCard
 import com.fesvieira.pomotasks.ui.components.TaskEditDialog
 import com.fesvieira.pomotasks.ui.theme.mtl_error
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -66,6 +69,7 @@ fun MainScreen(
     val millis by pomodoroViewModel.millis.collectAsState()
     val tasks by pomodoroViewModel.tasksListStateFlow.collectAsState()
     var showTaskEditDialog by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -128,7 +132,7 @@ fun MainScreen(
                     )
                 }
 
-                items(tasks) { task ->
+                items(tasks, key = {task -> task.id}) { task ->
                     val dismissState = rememberDismissState(
                         confirmValueChange = { dismissValue ->
                             if (dismissValue == DismissValue.DismissedToStart) {
@@ -142,9 +146,6 @@ fun MainScreen(
 
                     SwipeToDismiss(
                         state = dismissState,
-                        modifier = Modifier
-                            .padding(vertical = 1.dp)
-                            .animateItemPlacement(tween(300)),
                         directions = setOf(DismissDirection.EndToStart),
                         background = { SwipeToDismissDynamicBackground(dismissState) },
                         dismissContent = {
@@ -158,7 +159,8 @@ fun MainScreen(
                                         pomodoroViewModel.editTask(task)
                                     }
                             )
-                        }
+                        },
+                        modifier = Modifier.animateItemPlacement(animationSpec = tween(200))
                     )
                 }
             }
@@ -166,10 +168,12 @@ fun MainScreen(
             AnimatedVisibility(visible = showTaskEditDialog) {
                 TaskEditDialog(
                     onDismiss = { showTaskEditDialog = false },
-                    onAddTask = {
-                        taskName ->
-                        pomodoroViewModel.addTask(taskName = taskName)
-                        showTaskEditDialog = false
+                    onAddTask = { taskName ->
+                        coroutineScope.launch {
+                            showTaskEditDialog = false
+                            delay(500)
+                            pomodoroViewModel.addTask(taskName = taskName)
+                        }
                     }
                 )
             }
