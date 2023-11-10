@@ -26,7 +26,7 @@ class PomodoroViewModel(
     private var alarmTime: LocalDateTime? = null
     var alarmItem: AlarmItem? = null
 
-    private val _clockState = MutableStateFlow(ClockState.STOPPED)
+    private val _clockState = MutableStateFlow(ClockState.PAUSED)
     val clockState get() = _clockState
 
     private val _millis = MutableStateFlow(25 * 60000L)
@@ -39,7 +39,7 @@ class PomodoroViewModel(
 
     init {
         viewModelScope.launch {
-            val lastAlarmMillis = userPreferencesRepository.lastAlarmMillis.first()
+            val lastAlarmMillis = userPreferencesRepository.lastAlarmTimeStamp.first()
             val lastClockState = userPreferencesRepository.lastClockState.first()
             if (lastAlarmMillis != -1L && lastClockState == ClockState.PLAYING.name) {
                 alarmTime = LocalDateTime
@@ -47,11 +47,27 @@ class PomodoroViewModel(
 
                 alarmTime?.let {
                     alarmItem = AlarmItem(it)
-                    _millis.value = Duration.between(LocalDateTime.now(), it).seconds
+                    _millis.value = Duration.between(LocalDateTime.now(), it).toMillis()
                 }
 
                 _totalMillis.value = userPreferencesRepository.lastAlarmTotalMillis.first()
                 clockState.value = ClockState.valueOf(lastClockState)
+
+                timerJob = launch {
+                    while (_millis.value > 0) {
+                        delay(50)
+                        _millis.value =
+                            Duration.between(
+                                LocalDateTime.now(),
+                                alarmTime
+                            ).toMillis()
+
+                        if (millis.value <= 0L) {
+                            _clockState.value = ClockState.STOPPED
+                            _millis.value = _totalMillis.value
+                        }
+                    }
+                }
             }
         }
     }

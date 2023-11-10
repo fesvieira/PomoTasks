@@ -55,20 +55,18 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         lifecycleScope.launch {
             val clockState = pomodoroViewModel.clockState.value
+            userPreferencesRepository.setLastAlarmTotalMillis(
+                pomodoroViewModel.totalMillis.value
+            )
             userPreferencesRepository.saveLastClockState(clockState)
             if (clockState != ClockState.PLAYING) {
                 userPreferencesRepository.setLastAlarmTimeStamp(-1)
-                userPreferencesRepository.setLastAlarmTotalMillis(-1)
             } else {
                 pomodoroViewModel.alarmItem?.let {
                     userPreferencesRepository.setLastAlarmTimeStamp(
                         it.time.toEpochSecond(
                             OffsetDateTime.now().offset
                         ) * 1000
-                    )
-
-                    userPreferencesRepository.setLastAlarmTotalMillis(
-                        pomodoroViewModel.totalMillis.value
                     )
                 }
             }

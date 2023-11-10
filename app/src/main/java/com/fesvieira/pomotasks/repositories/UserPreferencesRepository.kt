@@ -28,7 +28,7 @@ class UserPreferencesRepository(
             preferences[LAST_CLOCK_STATE] ?: ClockState.PAUSED.name
         }
 
-    val lastAlarmMillis: Flow<Long> = dataStore.data
+    val lastAlarmTimeStamp: Flow<Long> = dataStore.data
         .catch { emit(emptyPreferences()) }
         .map { preferences ->
             preferences[LAST_ALARM_TIMESTAMP] ?: -1
