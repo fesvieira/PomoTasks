@@ -11,6 +11,7 @@ import com.fesvieira.pomotasks.repositories.UserPreferencesRepository
 import com.fesvieira.pomotasks.ui.components.ClockState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,11 +22,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneId
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,10 +51,8 @@ class PomodoroViewModel @Inject constructor(
     private val _totalMillis = MutableStateFlow(25 * 60000L)
     val totalMillis: StateFlow<Long> = _totalMillis
 
-    val tasksListStateFlow = flow<List<Task>> {
-        taskRepository.getTasks()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
+    private val _tasksListStateFlow = MutableStateFlow<List<Task>>(emptyList())
+    val tasksListStateFlow get() = _tasksListStateFlow
 
     private var timerJob: Job? = null
 
@@ -89,7 +91,9 @@ class PomodoroViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            taskRepository.getTasks()
+            taskRepository.getTasks().collect {
+                _tasksListStateFlow.value = it
+            }
         }
     }
 
@@ -139,5 +143,35 @@ class PomodoroViewModel @Inject constructor(
 
     fun setTotalMillis(millis: Long) {
         _totalMillis.value = millis
+    }
+
+    fun addTask(taskName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val task = Task(
+                id = 0,
+                name = taskName,
+                isDone = false,
+                timeStamp = LocalDateTime.now().toEpochSecond(OffsetDateTime.now().offset) * 1000
+            )
+            taskRepository.addTask(task)
+        }
+    }
+
+    fun deleteTask(task: Task) {
+        viewModelScope.launch(Dispatchers.IO)  {
+            taskRepository.deleteTask(task)
+        }
+    }
+
+    fun editTask(task: Task) {
+        viewModelScope.launch(Dispatchers.IO)  {
+            taskRepository.updateTask(task)
+        }
+    }
+
+    fun toggleTaskDone(task: Task) {
+        viewModelScope.launch(Dispatchers.IO) {
+            taskRepository.updateTask(task.copy(isDone = !task.isDone))
+        }
     }
 }

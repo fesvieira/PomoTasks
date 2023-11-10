@@ -23,12 +23,13 @@ import com.fesvieira.pomotasks.ui.theme.Typography
 fun TaskCard(
     title: String,
     isDone: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(mtc.primaryContainer, RoundedCornerShape(16.dp))
             .padding(16.dp)
