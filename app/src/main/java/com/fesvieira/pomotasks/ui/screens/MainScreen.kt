@@ -25,12 +25,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fesvieira.pomotasks.R
+import com.fesvieira.pomotasks.alarmmanager.AlarmItem
+import com.fesvieira.pomotasks.alarmmanager.AndroidAlarmScheduler
 import com.fesvieira.pomotasks.helpers.isAllowedTo
 import com.fesvieira.pomotasks.ui.components.AppFloatActionButton
 import com.fesvieira.pomotasks.ui.components.ClockComponent
 import com.fesvieira.pomotasks.ui.components.ClockState
 import com.fesvieira.pomotasks.ui.theme.PomoTasksTheme
-import com.fesvieira.pomotasks.workers.NotificationService
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import java.time.Duration
@@ -45,6 +46,8 @@ fun MainScreen() {
     var clockState by remember { mutableStateOf(ClockState.STOPPED) }
     val context = LocalContext.current
     var alarmTime by remember { mutableStateOf<LocalDateTime?>(null)}
+    val alarmScheduler = AndroidAlarmScheduler(context)
+    var alarmItem: AlarmItem? = null
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -64,17 +67,20 @@ fun MainScreen() {
     LaunchedEffect(clockState) {
         val timerJob = async {
             alarmTime = LocalDateTime.now().plusSeconds(seconds + 1)
+            alarmTime?.let { alarmItem = AlarmItem(it) }
+            alarmItem?.let { alarmScheduler::schedule }
+
             while (seconds > 0) {
                 delay(1000)
                 seconds = Duration.between(LocalDateTime.now(), alarmTime).seconds
-                if (seconds <= 0L) {
-                    NotificationService.scheduleNotification(context)
-                }
             }
         }
 
         when (clockState) {
-            ClockState.PAUSED, ClockState.STOPPED -> timerJob.cancel()
+            ClockState.PAUSED, ClockState.STOPPED -> {
+                timerJob.cancel()
+                alarmItem?.let(alarmScheduler::cancel)
+            }
             ClockState.PLAYING -> timerJob.start()
         }
     }
