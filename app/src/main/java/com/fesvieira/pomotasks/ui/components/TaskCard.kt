@@ -37,7 +37,8 @@ fun TaskCard(
         Text(
             text = title,
             style = Typography.labelLarge,
-            color = mtc.onPrimaryContainer
+            color = mtc.onPrimaryContainer,
+            modifier = Modifier.weight(1f)
         )
 
         Checkbox(
@@ -63,7 +64,7 @@ fun TaskCardPreview() {
         PomoTasksTheme {
             PomoTasksTheme(darkTheme = true) {
                 TaskCard(
-                    title = "Task1",
+                    title = "Very long task name that will probably take much more than one single line",
                     isDone = true,
                     onCheckedChange = {}
                 )
