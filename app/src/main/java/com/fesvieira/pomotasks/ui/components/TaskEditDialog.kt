@@ -11,9 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,14 +23,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.fesvieira.pomotasks.data.Task
 import com.fesvieira.pomotasks.ui.theme.Typography
+import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 
 @Composable
 fun TaskEditDialog(
+    editTask: Task? = null,
     onDismiss: () -> Unit,
-    onAddTask: (String) -> Unit
+    onAddTask: (String) -> Unit,
+    onEditTask: (Task) -> Unit
 ) {
-    var taskName by remember { mutableStateOf("") }
+    var taskName by remember { mutableStateOf(editTask?.name ?: "") }
 
     Dialog(onDismissRequest = onDismiss) {
         Column(
@@ -65,7 +67,7 @@ fun TaskEditDialog(
                 horizontalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 Button(
-                    onClick = { onAddTask(taskName) },
+                    onClick = { if (editTask != null) onEditTask(editTask) else onAddTask(taskName) },
                     enabled = taskName.isNotEmpty() && taskName.isNotBlank()
                 ) {
                     Text(text = "Ok")

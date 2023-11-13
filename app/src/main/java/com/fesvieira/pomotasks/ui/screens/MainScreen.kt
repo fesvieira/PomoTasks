@@ -53,6 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.fesvieira.pomotasks.PomodoroViewModel
 import com.fesvieira.pomotasks.R
+import com.fesvieira.pomotasks.data.Task
 import com.fesvieira.pomotasks.helpers.isAllowedTo
 import com.fesvieira.pomotasks.ui.components.AppFloatActionButton
 import com.fesvieira.pomotasks.ui.components.ClockComponent
@@ -78,6 +79,7 @@ fun MainScreen(
     var showTaskEditDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var showDone by remember { mutableStateOf(true) }
+    var selectedTask by remember { mutableStateOf<Task?>(null) }
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -101,6 +103,7 @@ fun MainScreen(
         Scaffold(
             floatingActionButton = {
                 AppFloatActionButton(icon = painterResource(R.drawable.ic_add)) {
+                    selectedTask = null
                     showTaskEditDialog = true
                 }
             }
@@ -169,6 +172,10 @@ fun MainScreen(
                                 TaskCard(
                                     title = task.name,
                                     isDone = task.isDone,
+                                    onTaskClick = {
+                                        selectedTask = task
+                                        showTaskEditDialog = true
+                                    },
                                     onCheckedChange = { pomodoroViewModel.toggleTaskDone(task) },
                                     modifier = Modifier
                                         .padding(horizontal = 16.dp)
@@ -241,12 +248,20 @@ fun MainScreen(
 
             AnimatedVisibility(visible = showTaskEditDialog) {
                 TaskEditDialog(
+                    editTask = selectedTask,
                     onDismiss = { showTaskEditDialog = false },
                     onAddTask = { taskName ->
                         coroutineScope.launch {
                             showTaskEditDialog = false
                             delay(500)
                             pomodoroViewModel.addTask(taskName = taskName)
+                        }
+                    },
+                    onEditTask = { task ->
+                        coroutineScope.launch {
+                            showTaskEditDialog = false
+                            delay(500)
+                            pomodoroViewModel.editTask(task)
                         }
                     }
                 )

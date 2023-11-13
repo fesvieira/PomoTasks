@@ -1,6 +1,7 @@
 package com.fesvieira.pomotasks.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,20 +24,26 @@ import com.fesvieira.pomotasks.ui.theme.Typography
 fun TaskCard(
     title: String,
     isDone: Boolean,
+    modifier: Modifier = Modifier,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    onTaskClick: (() -> Unit)? = null,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
+            .then(
+                if (onTaskClick != null) Modifier.clickable { onTaskClick() }
+                else Modifier
+            )
             .fillMaxWidth()
             .background(mtc.surfaceVariant, RoundedCornerShape(8.dp))
             .padding(16.dp)
+
     ) {
         Text(
             text = title,
-            style = Typography.labelLarge,
+            style = Typography.bodyLarge,
             color = mtc.onPrimaryContainer,
             modifier = Modifier.weight(1f)
         )
@@ -57,6 +64,7 @@ fun TaskCardPreview() {
             TaskCard(
                 title = "Task1",
                 isDone = false,
+                onTaskClick = {},
                 onCheckedChange = {}
             )
         }
@@ -66,6 +74,7 @@ fun TaskCardPreview() {
                 TaskCard(
                     title = "Very long task name that will probably take much more than one single line",
                     isDone = true,
+                    onTaskClick = {},
                     onCheckedChange = {}
                 )
             }
