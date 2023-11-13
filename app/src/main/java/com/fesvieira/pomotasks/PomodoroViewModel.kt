@@ -51,10 +51,15 @@ class PomodoroViewModel @Inject constructor(
         viewModelScope.launch {
             _totalMillis.value = userPreferencesRepository.lastAlarmTotalMillis.first()
 
-            userPreferencesRepository.lastAlarmTimeStamp.first()?.let {
-                if (it > 0) {
+            userPreferencesRepository.lastAlarmTimeStamp.first()?.let { stamp ->
+                val currentTimeStamp = LocalDateTime.now()
+                    .toEpochSecond(OffsetDateTime.now().offset) * 1000
+
+                if (stamp > currentTimeStamp) {
                     alarmTime = LocalDateTime
-                        .ofInstant(Instant.ofEpochMilli(it), ZoneId.systemDefault())
+                        .ofInstant(Instant.ofEpochMilli(stamp), ZoneId.systemDefault())
+
+                    alarmTime?.let { time -> alarmItem = AlarmItem(time) }
 
                     setClockState(ClockState.PLAYING, false)
                 }
@@ -81,7 +86,7 @@ class PomodoroViewModel @Inject constructor(
             when (state) {
                 ClockState.PAUSED, ClockState.STOPPED -> {
                     timerJob?.cancel()
-                    alarmItem?.let(alarmScheduler::cancel)
+                    alarmScheduler.cancel()
                 }
 
                 ClockState.PLAYING -> {

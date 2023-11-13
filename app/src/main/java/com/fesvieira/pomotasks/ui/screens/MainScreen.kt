@@ -104,12 +104,12 @@ fun MainScreen(
                     showTaskEditDialog = true
                 }
             }
-        ) {
-            LazyColumn(
+        ) { paddingValues ->
+        LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
-                    .padding(it)
+                    .padding(paddingValues)
                     .fillMaxSize()
                     .background(mtc.background)
                     .animateContentSize()

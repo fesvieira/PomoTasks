@@ -7,12 +7,9 @@ import com.fesvieira.pomotasks.workers.NotificationService
 
 
 class AlarmReceiver: BroadcastReceiver() {
-
     override fun onReceive(context: Context?, intent: Intent?) {
-        val notificationService = NotificationService
-
         context?.let {
-            notificationService.scheduleNotification(context)
+            NotificationService.scheduleNotification(context)
         }
     }
 }
