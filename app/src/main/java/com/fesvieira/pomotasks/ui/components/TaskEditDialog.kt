@@ -67,7 +67,12 @@ fun TaskEditDialog(
                 horizontalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 Button(
-                    onClick = { if (editTask != null) onEditTask(editTask) else onAddTask(taskName) },
+                    onClick = {
+                        if (editTask != null)
+                            onEditTask(editTask.copy(name = taskName))
+                        else
+                            onAddTask(taskName)
+                    },
                     enabled = taskName.isNotEmpty() && taskName.isNotBlank()
                 ) {
                     Text(text = "Ok")
