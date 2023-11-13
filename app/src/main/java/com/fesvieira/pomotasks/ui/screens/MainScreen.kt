@@ -77,6 +77,7 @@ fun MainScreen(
     val tasks by pomodoroViewModel.tasksListStateFlow.collectAsState()
     var showTaskEditDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    var showDone by remember { mutableStateOf(true) }
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -155,7 +156,10 @@ fun MainScreen(
                     AnimatedVisibility(
                         visible = !task.isDone,
                         enter = slideInVertically { it } + fadeIn(),
-                        exit = slideOutVertically { it } + fadeOut()
+                        exit = slideOutVertically { it } + fadeOut(),
+                        modifier = Modifier.animateItemPlacement(
+                            tween(400)
+                        )
                     ) {
                         SwipeToDismiss(
                             state = dismissState,
@@ -181,10 +185,14 @@ fun MainScreen(
                 item {
                     AnimatedVisibility(visible = tasks.any { it.isDone }) {
                         Text(
-                            text = "Completed!",
+                            text = "Completed! ${ if(showDone) " \uD83D\uDFE6" else " ⬛"}",
                             style = Typography.labelLarge,
                             color = mtc.onBackground,
-                            modifier = Modifier.padding(top = 40.dp)
+                            modifier = Modifier
+                                .padding(top = 40.dp)
+                                .clickable {
+                                    showDone = !showDone
+                                }
                         )
                     }
                 }
@@ -202,9 +210,12 @@ fun MainScreen(
                     )
 
                     AnimatedVisibility(
-                        visible = task.isDone,
+                        visible = task.isDone && showDone,
                         enter = slideInVertically { -it } + fadeIn(),
-                        exit = slideOutVertically { -it } + fadeOut()
+                        exit = slideOutVertically { -it } + fadeOut(),
+                        modifier = Modifier.animateItemPlacement(
+                            animationSpec = tween(400)
+                        )
                     ) {
                         SwipeToDismiss(
                             state = dismissState,
