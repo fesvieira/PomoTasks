@@ -19,7 +19,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -108,7 +111,7 @@ fun MainScreen(
                 }
             }
         ) { paddingValues ->
-        LazyColumn(
+            LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
@@ -117,31 +120,39 @@ fun MainScreen(
                     .background(mtc.background)
                     .animateContentSize()
             ) {
-                item {
-                    ClockComponent(
-                        clockState = clockState,
-                        millis = millis,
-                        totalMillis = totalMillis,
-                        onMinutesChange = { minutesString ->
-                            val newValue = (minutesString.toLongOrNull() ?: 0L) * 60000L
-                            pomodoroViewModel.setTotalMillis(newValue)
-                            pomodoroViewModel.setMillis(newValue)
-                        },
-                        onClockStateChange = { newClockState ->
-                            if (
-                                newClockState == ClockState.PLAYING &&
-                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                            ) {
-                                if (context.isAllowedTo(POST_NOTIFICATIONS)) {
-                                    pomodoroViewModel.setClockState(newClockState)
+                stickyHeader {
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(mtc.background)
+                    ) {
+                        ClockComponent(
+                            clockState = clockState,
+                            millis = millis,
+                            totalMillis = totalMillis,
+                            onMinutesChange = { minutesString ->
+                                val newValue = (minutesString.toLongOrNull() ?: 0L) * 60000L
+                                pomodoroViewModel.setTotalMillis(newValue)
+                                pomodoroViewModel.setMillis(newValue)
+                            },
+                            onClockStateChange = { newClockState ->
+                                if (
+                                    newClockState == ClockState.PLAYING &&
+                                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                                ) {
+                                    if (context.isAllowedTo(POST_NOTIFICATIONS)) {
+                                        pomodoroViewModel.setClockState(newClockState)
+                                    } else {
+                                        permissionsLauncher.launch(POST_NOTIFICATIONS)
+                                    }
                                 } else {
-                                    permissionsLauncher.launch(POST_NOTIFICATIONS)
+                                    pomodoroViewModel.setClockState(newClockState)
                                 }
-                            } else {
-                                pomodoroViewModel.setClockState(newClockState)
                             }
-                        }
-                    )
+                        )
+                    }
                 }
 
                 items(tasks, key = { task -> task.id }) { task ->
@@ -192,7 +203,7 @@ fun MainScreen(
                 item {
                     AnimatedVisibility(visible = tasks.any { it.isDone }) {
                         Text(
-                            text = "Completed! ${ if(showDone) " \uD83D\uDFE6" else " ⬛"}",
+                            text = "Completed! ${if (showDone) " \uD83D\uDFE6" else " ⬛"}",
                             style = Typography.labelLarge,
                             color = mtc.onBackground,
                             modifier = Modifier
@@ -204,7 +215,7 @@ fun MainScreen(
                     }
                 }
 
-                items(tasks, key = { "${it.id}"}) { task ->
+                items(tasks, key = { "${it.id}" }) { task ->
                     val dismissState = rememberDismissState(
                         confirmValueChange = { dismissValue ->
                             if (dismissValue == DismissValue.DismissedToStart) {
@@ -243,6 +254,10 @@ fun MainScreen(
                             modifier = Modifier.animateItemPlacement(animationSpec = tween(200))
                         )
                     }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(200.dp))
                 }
             }
 

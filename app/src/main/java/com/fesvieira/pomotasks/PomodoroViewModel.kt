@@ -135,6 +135,7 @@ class PomodoroViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             userPreferencesRepository.apply {
                 setLastAlarmTotalMillis(totalMillis.value)
+
                 if (clockState.value == ClockState.PLAYING && alarmItem != null) {
                     setLastAlarmTimeStamp(
                         (alarmItem?.time?.toEpochSecond(OffsetDateTime.now().offset) ?: 0) * 1000
