@@ -31,15 +31,15 @@ class PomodoroViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var alarmTime: LocalDateTime? = null
-    var alarmItem: AlarmItem? = null
+    private var alarmItem: AlarmItem? = null
 
     private val _clockState = MutableStateFlow(ClockState.PAUSED)
     val clockState get() = _clockState
 
-    private val _millis = MutableStateFlow(25 * 60000L)
+    private val _millis = MutableStateFlow(1500000L)
     val millis: StateFlow<Long> = _millis
 
-    private val _totalMillis = MutableStateFlow(25 * 60000L)
+    private val _totalMillis = MutableStateFlow(1500000L)
     val totalMillis: StateFlow<Long> = _totalMillis
 
     private val _tasksListStateFlow = MutableStateFlow<List<Task>>(emptyList())
@@ -48,23 +48,7 @@ class PomodoroViewModel @Inject constructor(
     private var timerJob: Job? = null
 
     init {
-        viewModelScope.launch {
-            _totalMillis.value = userPreferencesRepository.lastAlarmTotalMillis.first()
-
-            userPreferencesRepository.lastAlarmTimeStamp.first()?.let { stamp ->
-                val currentTimeStamp = LocalDateTime.now()
-                    .toEpochSecond(OffsetDateTime.now().offset) * 1000
-
-                if (stamp > currentTimeStamp) {
-                    alarmTime = LocalDateTime
-                        .ofInstant(Instant.ofEpochMilli(stamp), ZoneId.systemDefault())
-
-                    alarmTime?.let { time -> alarmItem = AlarmItem(time) }
-
-                    setClockState(ClockState.PLAYING, false)
-                }
-            }
-        }
+        loadState()
 
         viewModelScope.launch {
             taskRepository.getTasks().collect {
@@ -90,7 +74,7 @@ class PomodoroViewModel @Inject constructor(
                 }
 
                 ClockState.PLAYING -> {
-                    if(scheduleAlarm) scheduleAlarm()
+                    if (scheduleAlarm) scheduleAlarm()
 
                     timerJob = launch {
                         while (_millis.value > 0) {
@@ -144,6 +128,41 @@ class PomodoroViewModel @Inject constructor(
     fun toggleTaskDone(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
             taskRepository.updateTask(task.copy(isDone = !task.isDone))
+        }
+    }
+
+    fun saveState() {
+        viewModelScope.launch(Dispatchers.IO) {
+            userPreferencesRepository.apply {
+                setLastAlarmTotalMillis(totalMillis.value)
+                if (clockState.value == ClockState.PLAYING && alarmItem != null) {
+                    setLastAlarmTimeStamp(
+                        (alarmItem?.time?.toEpochSecond(OffsetDateTime.now().offset) ?: 0) * 1000
+                    )
+                } else {
+                    setLastAlarmTimeStamp(null)
+                }
+            }
+        }
+    }
+
+    private fun loadState() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _totalMillis.value = userPreferencesRepository.lastAlarmTotalMillis.first()
+
+            userPreferencesRepository.lastAlarmTimeStamp.first()?.let { stamp ->
+                val currentTimeStamp = LocalDateTime.now()
+                    .toEpochSecond(OffsetDateTime.now().offset) * 1000
+
+                if (stamp > currentTimeStamp) {
+                    alarmTime = LocalDateTime
+                        .ofInstant(Instant.ofEpochMilli(stamp), ZoneId.systemDefault())
+
+                    alarmTime?.let { time -> alarmItem = AlarmItem(time) }
+
+                    setClockState(ClockState.PLAYING, false)
+                }
+            }
         }
     }
 }

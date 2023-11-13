@@ -8,14 +8,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import com.fesvieira.pomotasks.repositories.UserPreferencesRepository
-import com.fesvieira.pomotasks.ui.components.ClockState
 import com.fesvieira.pomotasks.ui.screens.MainScreen
 import com.fesvieira.pomotasks.ui.theme.PomoTasksTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import java.time.OffsetDateTime
 import javax.inject.Inject
 
 
@@ -42,21 +38,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onStop() {
-        lifecycleScope.launch {
-            userPreferencesRepository.apply {
-                setLastAlarmTotalMillis(pomodoroViewModel.totalMillis.value)
+        pomodoroViewModel.saveState()
 
-                if (pomodoroViewModel.clockState.value == ClockState.PLAYING) {
-                    pomodoroViewModel.alarmItem?.let {
-                        setLastAlarmTimeStamp(
-                            it.time.toEpochSecond(OffsetDateTime.now().offset) * 1000
-                        )
-                    }
-                } else {
-                    setLastAlarmTimeStamp(null)
-                }
-            }
-        }
         super.onStop()
     }
 }

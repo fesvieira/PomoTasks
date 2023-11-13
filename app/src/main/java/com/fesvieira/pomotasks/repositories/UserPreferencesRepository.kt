@@ -5,8 +5,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
-import com.fesvieira.pomotasks.ui.components.ClockState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -30,7 +28,7 @@ class UserPreferencesRepository(
     val lastAlarmTotalMillis: Flow<Long> = dataStore.data
         .catch { emit(emptyPreferences()) }
         .map { preferences ->
-            preferences[LAST_ALARM_TOTAL_MILLIS] ?: -1
+            preferences[LAST_ALARM_TOTAL_MILLIS] ?: 1500000L
         }
 
     // SETTERS
@@ -46,7 +44,11 @@ class UserPreferencesRepository(
 
     suspend fun setLastAlarmTotalMillis(millis: Long?) {
         dataStore.edit { preferences ->
-            preferences[LAST_ALARM_TOTAL_MILLIS] = millis ?: -1
+            millis?.let { safeMillis ->
+                preferences[LAST_ALARM_TOTAL_MILLIS] = safeMillis
+                return@edit
+            }
+            preferences.remove(LAST_ALARM_TOTAL_MILLIS)
         }
     }
 }
