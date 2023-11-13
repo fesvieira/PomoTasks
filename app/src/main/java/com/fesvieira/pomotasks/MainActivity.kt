@@ -56,7 +56,6 @@ class MainActivity : ComponentActivity() {
                     setLastAlarmTimeStamp(null)
                 }
             }
-
         }
         super.onStop()
     }

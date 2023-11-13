@@ -74,7 +74,7 @@ class PomodoroViewModel @Inject constructor(
     }
 
     private fun scheduleAlarm() {
-        alarmTime = LocalDateTime.now().plusSeconds((_millis.value / 1000) + 1L)
+        alarmTime = LocalDateTime.now().plusSeconds(_millis.value / 1000)
         alarmTime?.let { alarmItem = AlarmItem(it) }
         alarmItem?.let { alarmScheduler.schedule(it) }
     }
