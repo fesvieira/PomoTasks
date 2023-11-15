@@ -150,19 +150,22 @@ class PomodoroViewModel @Inject constructor(
     private fun loadState() {
         viewModelScope.launch(Dispatchers.IO) {
             _totalMillis.value = userPreferencesRepository.lastAlarmTotalMillis.first()
+            val lastAlarmStamp = userPreferencesRepository.lastAlarmTimeStamp.first()
+            val currentTimeStamp = LocalDateTime.now()
+                .toEpochSecond(OffsetDateTime.now().offset) * 1000
 
-            userPreferencesRepository.lastAlarmTimeStamp.first()?.let { stamp ->
-                val currentTimeStamp = LocalDateTime.now()
-                    .toEpochSecond(OffsetDateTime.now().offset) * 1000
+            if (lastAlarmStamp == null || lastAlarmStamp < currentTimeStamp) {
+                alarmTime = LocalDateTime.now().plusNanos(_totalMillis.value * 1000)
+                alarmTime?.let { time -> alarmItem = AlarmItem(time) }
+                setClockState(ClockState.PAUSED, false)
+                _millis.value = totalMillis.value
+            } else {
+                alarmTime = LocalDateTime
+                    .ofInstant(Instant.ofEpochMilli(lastAlarmStamp), ZoneId.systemDefault())
 
-                if (stamp > currentTimeStamp) {
-                    alarmTime = LocalDateTime
-                        .ofInstant(Instant.ofEpochMilli(stamp), ZoneId.systemDefault())
+                alarmTime?.let { time -> alarmItem = AlarmItem(time) }
 
-                    alarmTime?.let { time -> alarmItem = AlarmItem(time) }
-
-                    setClockState(ClockState.PLAYING, false)
-                }
+                setClockState(ClockState.PLAYING, false)
             }
         }
     }
