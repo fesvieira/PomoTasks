@@ -2,7 +2,6 @@ package com.fesvieira.pomotasks.ui.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,7 +38,6 @@ enum class ClockState {
     PLAYING
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ClockComponent(
     clockState: ClockState,
@@ -159,12 +157,12 @@ fun ClockComponent(
         }
 
         CircularProgressIndicator(
-            progress = progressPercentage,
-            color = mtc.tertiary,
-            strokeWidth = 10.dp,
+            progress = { progressPercentage },
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(240.dp)
+                .size(240.dp),
+            color = mtc.tertiary,
+            strokeWidth = 10.dp,
         )
     }
 }
