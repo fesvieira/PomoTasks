@@ -2,7 +2,6 @@ package com.fesvieira.pomotasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fesvieira.pomotasks.alarmmanager.AlarmItem
 import com.fesvieira.pomotasks.alarmmanager.AndroidAlarmScheduler
 import com.fesvieira.pomotasks.data.Task
 import com.fesvieira.pomotasks.repositories.TaskRepository
@@ -31,7 +30,6 @@ class PomodoroViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var alarmTime: LocalDateTime? = null
-    private var alarmItem: AlarmItem? = null
 
     private val _clockState = MutableStateFlow(ClockState.PAUSED)
     val clockState get() = _clockState
@@ -59,8 +57,7 @@ class PomodoroViewModel @Inject constructor(
 
     private fun scheduleAlarm() {
         alarmTime = LocalDateTime.now().plusSeconds(_millis.value / 1000)
-        alarmTime?.let { alarmItem = AlarmItem(it) }
-        alarmItem?.let { alarmScheduler.schedule(it) }
+        alarmTime?.let { alarmScheduler.schedule(it)  }
     }
 
     fun setClockState(state: ClockState, scheduleAlarm: Boolean = true) {
@@ -136,9 +133,9 @@ class PomodoroViewModel @Inject constructor(
             userPreferencesRepository.apply {
                 setLastAlarmTotalMillis(totalMillis.value)
 
-                if (clockState.value == ClockState.PLAYING && alarmItem != null) {
+                if (clockState.value == ClockState.PLAYING && alarmTime != null) {
                     setLastAlarmTimeStamp(
-                        (alarmItem?.time?.toEpochSecond(OffsetDateTime.now().offset) ?: 0) * 1000
+                        (alarmTime?.toEpochSecond(OffsetDateTime.now().offset) ?: 0) * 1000
                     )
                 } else {
                     setLastAlarmTimeStamp(null)
@@ -156,14 +153,11 @@ class PomodoroViewModel @Inject constructor(
 
             if (lastAlarmStamp == null || lastAlarmStamp < currentTimeStamp) {
                 alarmTime = LocalDateTime.now().plusNanos(_totalMillis.value * 1000)
-                alarmTime?.let { time -> alarmItem = AlarmItem(time) }
                 setClockState(ClockState.PAUSED, false)
                 _millis.value = totalMillis.value
             } else {
                 alarmTime = LocalDateTime
                     .ofInstant(Instant.ofEpochMilli(lastAlarmStamp), ZoneId.systemDefault())
-
-                alarmTime?.let { time -> alarmItem = AlarmItem(time) }
 
                 setClockState(ClockState.PLAYING, false)
             }

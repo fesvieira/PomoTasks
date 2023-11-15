@@ -5,6 +5,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import java.time.LocalDateTime
 import java.time.ZoneId
 
 class AndroidAlarmScheduler(
@@ -13,12 +14,12 @@ class AndroidAlarmScheduler(
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
     @SuppressLint("MissingPermission")
-    override fun schedule(item: AlarmItem) {
+    override fun schedule(time: LocalDateTime) {
         val intent = Intent(context, AlarmReceiver::class.java)
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            item.time.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000,
+            time.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000,
             PendingIntent.getBroadcast(
                 context,
                 1,

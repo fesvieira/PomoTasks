@@ -1,6 +1,8 @@
 package com.fesvieira.pomotasks.alarmmanager
 
+import java.time.LocalDateTime
+
 interface AlarmScheduler {
-    fun schedule(item: AlarmItem)
+    fun schedule(time: LocalDateTime)
     fun cancel()
 }
