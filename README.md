@@ -46,10 +46,6 @@ In this app, we have only the MainScreen, which is the core of the app UI. In Ma
 
 In the theme folder, there are files related to the app customization. The Color file will store any custom colors; Theme will configure how the colors should be applied in the app and handle light and dark mode. Type is for text styles.
 
-##### Workers
-
-The Workers folder contains NotificationWorker, which uses the WorkManager Android library to handle background tasks; in this case, it is used to display notifications. Notifications Service is an object to simplify NotificationWorker use in the app.
-
 ##### Other files
 
 In the project folder, there are also important files. MainActivity is where the app starts, and it will handle its lifecycle, determining which screen or fragment the app should open. PomodoroViewModel is the core of app logic, with implemented functions to handle tasks, clock state, databases, user preferences, and alarms. PomoTaksApplication is necessary for dependency injection, identifying the module as an application, handling its context, and injecting necessary dependencies.

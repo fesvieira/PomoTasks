@@ -13,31 +13,25 @@ class AndroidAlarmScheduler(
 ) : AlarmScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
+    private val intent: PendingIntent get() {
+        return PendingIntent.getBroadcast(
+            context,
+            1,
+            Intent(context, AlarmReceiver::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
     @SuppressLint("MissingPermission")
     override fun schedule(time: LocalDateTime) {
-        val intent = Intent(context, AlarmReceiver::class.java)
-
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             time.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000,
-            PendingIntent.getBroadcast(
-                context,
-                1,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+            intent
         )
     }
 
     override fun cancel() {
-        alarmManager.cancel(
-            PendingIntent.getBroadcast(
-                context,
-                1,
-                Intent(context, AlarmReceiver::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        )
+        alarmManager.cancel(intent)
     }
-
 }
