@@ -81,6 +81,7 @@ fun MainScreen(
     val totalMillis by pomodoroViewModel.totalMillis.collectAsState()
     val millis by pomodoroViewModel.millis.collectAsState()
     val tasks by pomodoroViewModel.tasksListStateFlow.collectAsState()
+    val isLoading by pomodoroViewModel.isLoadingTasks.collectAsState()
     var showTaskEditDialog by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var showDone by remember { mutableStateOf(true) }
@@ -109,7 +110,7 @@ fun MainScreen(
             floatingActionButton = {
                 AppFloatActionButton(
                     icon = painterResource(R.drawable.ic_add),
-                    isAnimating = tasks.isEmpty()
+                    isAnimating = tasks.isEmpty() && !isLoading
                 ) {
                     selectedTask = null
                     showTaskEditDialog = true
@@ -162,13 +163,13 @@ fun MainScreen(
 
                 item{
                     AnimatedVisibility(
-                        tasks.isEmpty(),
+                        tasks.isEmpty() && !isLoading,
                         enter = slideInHorizontally(),
                         exit = slideOutVertically { -it }
                     ) {
                         Text(
                             text = "Click on Add button to create new tasks.",
-                            style = Typography.labelLarge,
+                            style = Typography.bodyLarge,
                             color = mtc.onBackground,
                             textAlign = TextAlign.Center,
                             modifier = Modifier

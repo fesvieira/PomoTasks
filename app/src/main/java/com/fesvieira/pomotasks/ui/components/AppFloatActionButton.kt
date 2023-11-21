@@ -1,8 +1,7 @@
 package com.fesvieira.pomotasks.ui.components
 
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -30,17 +29,15 @@ fun AppFloatActionButton(
 ) {
     var inflate by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        if (inflate) 1.1f else 1.0f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioHighBouncy),
+        if (inflate) 1.2f else 1.0f,
+        animationSpec = tween(600),
         label = "scale"
     )
 
     LaunchedEffect(isAnimating) {
         while (isAnimating) {
-            inflate = true
-            delay(1000)
-            inflate = false
-            delay(1000)
+            inflate = !inflate
+            delay(600)
         }
         inflate = false
     }

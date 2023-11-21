@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -42,6 +43,9 @@ class PomodoroViewModel @Inject constructor(
 
     private val _tasksListStateFlow = MutableStateFlow<List<Task>>(emptyList())
     val tasksListStateFlow get() = _tasksListStateFlow
+    
+    private val _isLoadingTasks = MutableStateFlow(true)
+    val isLoadingTasks get() = _isLoadingTasks.asStateFlow()
 
     private var timerJob: Job? = null
 
@@ -51,6 +55,7 @@ class PomodoroViewModel @Inject constructor(
         viewModelScope.launch {
             taskRepository.getTasks().collect {
                 _tasksListStateFlow.value = it
+                _isLoadingTasks.value = false
             }
         }
     }
