@@ -12,6 +12,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -53,6 +54,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.fesvieira.pomotasks.PomodoroViewModel
 import com.fesvieira.pomotasks.R
@@ -105,7 +107,10 @@ fun MainScreen(
     ) {
         Scaffold(
             floatingActionButton = {
-                AppFloatActionButton(icon = painterResource(R.drawable.ic_add)) {
+                AppFloatActionButton(
+                    icon = painterResource(R.drawable.ic_add),
+                    isAnimating = tasks.isEmpty()
+                ) {
                     selectedTask = null
                     showTaskEditDialog = true
                 }
@@ -151,6 +156,23 @@ fun MainScreen(
                                     pomodoroViewModel.setClockState(newClockState)
                                 }
                             }
+                        )
+                    }
+                }
+
+                item{
+                    AnimatedVisibility(
+                        tasks.isEmpty(),
+                        enter = slideInHorizontally(),
+                        exit = slideOutVertically { -it }
+                    ) {
+                        Text(
+                            text = "Click on Add button to create new tasks.",
+                            style = Typography.labelLarge,
+                            color = mtc.onBackground,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(top = 40.dp, start = 16.dp, end = 16.dp)
                         )
                     }
                 }
