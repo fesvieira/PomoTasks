@@ -147,7 +147,11 @@ fun MainScreen(
     ) {
         Scaffold(
             floatingActionButton = {
-                AnimatedVisibility(visible = tasks.isNotEmpty()) {
+                AnimatedVisibility(
+                    visible = tasks.isNotEmpty(),
+                    enter = fadeIn() + slideInHorizontally { it },
+                    exit = fadeOut() + slideOutHorizontally { it }
+                ) {
                     AppFloatActionButton(icon = painterResource(R.drawable.ic_add)) {
                         selectedTask = null
                         showTaskEditDialog = true
@@ -196,7 +200,6 @@ fun MainScreen(
                     .animateContentSize()
             ) {
                 stickyHeader {
-
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
@@ -233,11 +236,14 @@ fun MainScreen(
                 item {
                     AnimatedVisibility(
                         tasks.isEmpty() && !isLoading,
-                        enter = slideInHorizontally(),
-                        exit = slideOutHorizontally { -it }
+                        enter = fadeIn() + slideInHorizontally(),
+                        exit = fadeOut() + slideOutHorizontally { -it }
                     ) {
                         Column(
-                            verticalArrangement = Arrangement.spacedBy(40.dp, alignment = Alignment.CenterVertically),
+                            verticalArrangement = Arrangement.spacedBy(
+                                40.dp,
+                                alignment = Alignment.CenterVertically
+                            ),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .fillMaxWidth()
