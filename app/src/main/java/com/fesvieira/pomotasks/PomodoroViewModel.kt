@@ -115,6 +115,12 @@ class PomodoroViewModel @Inject constructor(
         }
     }
 
+    fun reAddTask(task: Task) {
+        viewModelScope.launch(Dispatchers.IO) {
+            taskRepository.addTask(task)
+        }
+    }
+
     fun deleteTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
             taskRepository.deleteTask(task)

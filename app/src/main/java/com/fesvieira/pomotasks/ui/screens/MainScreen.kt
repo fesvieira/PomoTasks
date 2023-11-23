@@ -3,6 +3,7 @@ package com.fesvieira.pomotasks.ui.screens
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -37,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -44,6 +46,7 @@ import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -83,6 +86,7 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val clockState by pomodoroViewModel.clockState.collectAsState()
+    var shouldLeaveOnBackPress by remember { mutableStateOf(false) }
     val totalMillis by pomodoroViewModel.totalMillis.collectAsState()
     val millis by pomodoroViewModel.millis.collectAsState()
     val tasks by pomodoroViewModel.tasksListStateFlow.collectAsState()
@@ -92,6 +96,18 @@ fun MainScreen(
     var showDone by remember { mutableStateOf(true) }
     var selectedTask by remember { mutableStateOf<Task?>(null) }
     val snackBarHostState = remember { SnackbarHostState() }
+    var taskToDelete by remember { mutableStateOf<Task?>(null) }
+
+    BackHandler(!shouldLeaveOnBackPress) {
+        coroutineScope.launch {
+            shouldLeaveOnBackPress = true
+            delay(3500)
+            shouldLeaveOnBackPress = false
+        }
+
+        Toast.makeText(context, "Press back again to leave", Toast.LENGTH_LONG).show()
+    }
+
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -107,6 +123,19 @@ fun MainScreen(
                 ).show()
             }
         }
+
+    LaunchedEffect(taskToDelete) {
+        taskToDelete?.let { task ->
+            pomodoroViewModel.deleteTask(task)
+            delay(500)
+            val job = launch {
+                snackBarHostState.showSnackbar("", duration = SnackbarDuration.Indefinite)
+            }
+            delay(5000)
+            job.cancel()
+            taskToDelete = null
+        }
+    }
 
     Surface(
         color = mtc.background,
@@ -130,22 +159,26 @@ fun MainScreen(
                         modifier = Modifier
                             .padding(12.dp),
                         containerColor = mtc.primaryContainer,
-                        contentColor = Color.White,
+                        contentColor = mtc.onPrimaryContainer,
                         action = {
                             Text(
-                                text = "Undo",
+                                text = "UNDO",
                                 style = Typography.labelLarge,
                                 fontSize = 14.sp,
-                                color = Color.White,
+                                color = mtc.onPrimaryContainer,
                                 modifier = Modifier
                                     .clickable {
                                         it.dismiss()
+                                        taskToDelete?.let { task ->
+                                            pomodoroViewModel.reAddTask(task)
+                                        }
+                                        taskToDelete = null
                                     }
                             )
                         }
                     ) {
                         Text(
-                            text = "Deleted \${task_name}",
+                            text = "Deleted ${taskToDelete?.name ?: ""}",
                             style = Typography.bodyMedium,
                         )
                     }
@@ -217,7 +250,7 @@ fun MainScreen(
                     val dismissState = rememberDismissState(
                         confirmValueChange = { dismissValue ->
                             if (dismissValue == DismissValue.DismissedToStart) {
-                                pomodoroViewModel.deleteTask(task)
+                                taskToDelete = task
                             }
 
                             true
