@@ -2,6 +2,7 @@ package com.fesvieira.pomotasks.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -16,6 +17,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.fesvieira.pomotasks.R
 import kotlinx.coroutines.delay
@@ -25,19 +27,20 @@ import androidx.compose.material3.MaterialTheme.colorScheme as mtc
 fun AppFloatActionButton(
     icon: Painter,
     isAnimating: Boolean = false,
+    size: Dp = 60.dp,
     onClick: () -> Unit
 ) {
     var inflate by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         if (inflate) 1.2f else 1.0f,
-        animationSpec = tween(600),
+        animationSpec = tween(2000),
         label = "scale"
     )
 
     LaunchedEffect(isAnimating) {
         while (isAnimating) {
             inflate = !inflate
-            delay(600)
+            delay(2000)
         }
         inflate = false
     }
@@ -47,12 +50,14 @@ fun AppFloatActionButton(
         shape = RoundedCornerShape(16.dp),
         onClick = onClick,
         modifier = Modifier
+            .size(size)
             .scale(scale)
     ) {
         Icon(
             painter = icon,
             tint = mtc.onSecondaryContainer,
             contentDescription = null,
+            modifier = Modifier.size(size / 2.5f)
         )
     }
 }

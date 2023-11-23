@@ -15,12 +15,14 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -145,12 +147,11 @@ fun MainScreen(
     ) {
         Scaffold(
             floatingActionButton = {
-                AppFloatActionButton(
-                    icon = painterResource(R.drawable.ic_add),
-                    isAnimating = tasks.isEmpty() && !isLoading
-                ) {
-                    selectedTask = null
-                    showTaskEditDialog = true
+                AnimatedVisibility(visible = tasks.isNotEmpty()) {
+                    AppFloatActionButton(icon = painterResource(R.drawable.ic_add)) {
+                        selectedTask = null
+                        showTaskEditDialog = true
+                    }
                 }
             },
             snackbarHost = {
@@ -229,20 +230,37 @@ fun MainScreen(
                     }
                 }
 
-                item{
+                item {
                     AnimatedVisibility(
                         tasks.isEmpty() && !isLoading,
                         enter = slideInHorizontally(),
-                        exit = slideOutVertically { -it }
+                        exit = slideOutHorizontally { -it }
                     ) {
-                        Text(
-                            text = "Click on Add button to create new tasks.",
-                            style = Typography.bodyLarge,
-                            color = mtc.onBackground,
-                            textAlign = TextAlign.Center,
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(40.dp, alignment = Alignment.CenterVertically),
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
-                                .padding(top = 40.dp, start = 16.dp, end = 16.dp)
-                        )
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = "Click on Add button to create new tasks.",
+                                style = Typography.bodyLarge,
+                                color = mtc.onBackground,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .padding(top = 40.dp, start = 16.dp, end = 16.dp)
+                            )
+
+                            AppFloatActionButton(
+                                icon = painterResource(R.drawable.ic_add),
+                                size = 100.dp,
+                                isAnimating = tasks.isEmpty() && !isLoading && !showTaskEditDialog
+                            ) {
+                                selectedTask = null
+                                showTaskEditDialog = true
+                            }
+                        }
                     }
                 }
 
