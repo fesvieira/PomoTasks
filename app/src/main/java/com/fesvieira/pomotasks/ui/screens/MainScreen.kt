@@ -50,6 +50,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -103,8 +104,10 @@ fun MainScreen(
         }
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = mtc.background
+        color = mtc.background,
+        modifier = Modifier
+            .fillMaxSize()
+            .blur(if (showTaskEditDialog) 10.dp else 0.dp)
     ) {
         Scaffold(
             floatingActionButton = {
