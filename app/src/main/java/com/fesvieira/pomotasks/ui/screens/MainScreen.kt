@@ -36,6 +36,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
@@ -57,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.fesvieira.pomotasks.PomodoroViewModel
 import com.fesvieira.pomotasks.R
 import com.fesvieira.pomotasks.data.Task
@@ -87,6 +91,7 @@ fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
     var showDone by remember { mutableStateOf(true) }
     var selectedTask by remember { mutableStateOf<Task?>(null) }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     val permissionsLauncher =
         rememberLauncherForActivityResult(
@@ -117,6 +122,33 @@ fun MainScreen(
                 ) {
                     selectedTask = null
                     showTaskEditDialog = true
+                }
+            },
+            snackbarHost = {
+                SnackbarHost(hostState = snackBarHostState) {
+                    Snackbar(
+                        modifier = Modifier
+                            .padding(12.dp),
+                        containerColor = mtc.primaryContainer,
+                        contentColor = Color.White,
+                        action = {
+                            Text(
+                                text = "Undo",
+                                style = Typography.labelLarge,
+                                fontSize = 14.sp,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .clickable {
+                                        it.dismiss()
+                                    }
+                            )
+                        }
+                    ) {
+                        Text(
+                            text = "Deleted \${task_name}",
+                            style = Typography.bodyMedium,
+                        )
+                    }
                 }
             }
         ) { paddingValues ->
