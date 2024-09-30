@@ -1,5 +1,4 @@
 # POMOTASKS
-#### Video Demo: https://youtu.be/J4UPU5k2Mag?si=P0pBHXq5VTuTKiuU
 #### Name: Felipe Silva Vieira
 #### Location: Maringá, Brazil
 #### Description: An android app to keep track of your schedule and organize it in blocks of time
